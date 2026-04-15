@@ -16,14 +16,14 @@ enum Role {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
-  email     String   @unique
+  email     String    @unique
   password  String
-  role      Role     @default(admin)
+  role      Role      @default(admin)
   products  Product[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model Product {
@@ -44,31 +44,32 @@ model Product {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
 model Inquiry {
   id              Int      @id @default(autoincrement())
   name            String
   email           String?
   phone           String
   message         String
-  type            String   // 'contact', 'product', 'customize'
-  productCategory String?  // 'suiting', 'shirting', 'wedding', 'general'
+  type            String // 'contact', 'product', 'customize'
+  productCategory String? // 'suiting', 'shirting', 'wedding', 'general'
   productName     String?
   createdAt       DateTime @default(now())
 }
 
 model Job {
-  id           Int      @id @default(autoincrement())
+  id           Int              @id @default(autoincrement())
   title        String
-  category     String   // e.g. 'Production', 'Retail', 'Design'
+  category     String // e.g. 'Production', 'Retail', 'Design'
   description  String
   requirements String
-  package      String   // Compensation/Salary
+  package      String // Compensation/Salary
   location     String
-  type         String   // 'Full-time', 'Part-time'
-  status       String   @default("Open") // 'Open', 'Closed'
+  type         String // 'Full-time', 'Part-time'
+  status       String           @default("Open") // 'Open', 'Closed'
   applications JobApplication[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 }
 
 model JobApplication {
@@ -78,8 +79,57 @@ model JobApplication {
   name      String
   email     String
   phone     String
-  resumeUrl String   // Path to uploaded resume
+  resumeUrl String // Path to uploaded resume
   message   String?
   status    String   @default("Pending") // 'Pending', 'Reviewed', 'Rejected', 'Hired'
   createdAt DateTime @default(now())
+}
+
+enum OutfitType {
+  Suit
+  Shirt
+  Wedding_outfit
+}
+
+enum ShirtVariation {
+  Shirt_Full_Hands
+  Shirt_Half_Hands
+  Mandarin_Full_Hands
+  Mandarin_Half_Hands
+}
+
+enum FabricPattern {
+  solid
+  stripe
+  check
+  grid
+  linen
+  jacquard
+  velvet
+  brocade
+  dobby
+  herringbone
+  dot
+  birdseye
+  houndstooth
+  matte
+  print
+  sheen
+}
+
+model CustomizeMaterial {
+  id           Int            @id @default(autoincrement())
+  // customId     String         @unique
+  outfit       OutfitType
+  name         String
+  family       String
+  subLabel     String
+  defaultColor String
+  colors       String[]
+  pattern      FabricPattern?
+  premium      Boolean        @default(false)
+  lightweight  Boolean        @default(false)
+  textureImage String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 }
