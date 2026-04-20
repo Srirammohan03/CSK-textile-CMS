@@ -1,18 +1,22 @@
-import express from 'express';
-import { 
-  getProducts, getProductById, createProduct, updateProduct, deleteProduct, getStats
-} from '../controllers/productController.js';
-import { protect, admin } from '../middlewares/authMiddleware.js';
+import express from "express";
+import {
+  getProducts,
+  getProductById,
+  createProduct,
+  updateProduct,
+  deleteProduct,
+  getStats,
+} from "../controllers/productController.js";
+import { protect, admin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get('/stats', protect, admin, getStats);
+router.get("/stats", protect, getStats);
 
-router.route('/')
-  .get(getProducts)
-  .post(protect, admin, createProduct);
+router.route("/").get(getProducts).post(protect, admin, createProduct);
 
-router.route('/:id')
+router
+  .route("/:id")
   .get(getProductById)
   .put(protect, admin, updateProduct)
   .delete(protect, admin, deleteProduct);

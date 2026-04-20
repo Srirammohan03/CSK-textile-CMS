@@ -1,44 +1,66 @@
-import jwt from 'jsonwebtoken';
-import type { Request, Response, NextFunction } from 'express';
-import prisma from '../config/db.js';
+import jwt from "jsonwebtoken";
+import type { Request, Response, NextFunction } from "express";
+import prisma from "../config/db.js";
 
 interface DecodedToken {
-  id: string;
-  role: string;
+  id: number;
+  name: string;
+  email: string;
+  role: "admin" | "editor";
 }
 
-export const protect = async (req: any, res: Response, next: NextFunction) => {
-  let token;
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+    role: "admin" | "editor";
+    name: string;
+  };
+}
 
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'csk_secret_key_123') as DecodedToken;
+export const protect = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  const { token } = req.cookies;
+  if (!token) {
+    return res.status(401).json({ message: "Not authorized, no token" });
+  }
 
+  try {
+    if (token) {
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET!,
+      ) as DecodedToken;
       const user = await prisma.user.findUnique({
-        where: { id: parseInt(decoded.id) },
-        select: { id: true, email: true, role: true, name: true }
+        where: { id: decoded.id },
+        select: { id: true, email: true, role: true, name: true },
       });
 
       if (!user) {
-        return res.status(401).json({ message: 'User not found' });
+        return res
+          .status(401)
+          .json({ message: "Not authorized, user not found" });
       }
 
       req.user = user;
       next();
-    } catch (error) {
-      console.error(error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
     }
-  } else {
-    res.status(401).json({ message: 'Not authorized, no token' });
+  } catch (error) {
+    return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };
 
-export const admin = (req: any, res: Response, next: NextFunction) => {
-  if (req.user && req.user.role === 'admin') {
+export const admin = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (req.user && req.user.role === "admin") {
     next();
   } else {
-    res.status(401).json({ message: 'Not authorized as an admin' });
+    res.status(401).json({ message: "Not authorized as an admin" });
   }
 };
