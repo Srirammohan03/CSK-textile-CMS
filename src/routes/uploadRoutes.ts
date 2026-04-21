@@ -73,15 +73,9 @@ const upload = multer({
 // @desc    Upload image
 // @route   POST /api/upload
 // @access  Private/Admin
-router.post(
-  "/",
-  protect,
-  admin,
-  upload.single("image"),
-  (req: any, res: any) => {
-    res.send(`/${req.file.path.replace(/\\/g, "/")}`);
-  },
-);
+router.post("/", protect, upload.single("image"), (req: any, res: any) => {
+  res.send(`/${req.file.path.replace(/\\/g, "/")}`);
+});
 router.post("/unauth", upload.single("image"), (req: any, res: any) => {
   res.send(`/${req.file.path.replace(/\\/g, "/")}`);
 });
