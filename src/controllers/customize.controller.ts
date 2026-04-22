@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import prisma from "../config/db.js";
 import type { Request, Response } from "express";
 
@@ -98,7 +99,23 @@ export const getCustomizeWedding = async (req: Request, res: Response) => {
 
 export const getCustomize = async (req: Request, res: Response) => {
   try {
-    const customizes = await prisma.customizeMaterial.findMany();
+    const { search } = req.query;
+
+    const searchValue = search?.toString().trim();
+
+    const where: Prisma.CustomizeMaterialWhereInput = searchValue
+      ? {
+          OR: [
+            { name: { contains: searchValue, mode: "insensitive" } },
+            { family: { contains: searchValue, mode: "insensitive" } },
+            { subLabel: { contains: searchValue, mode: "insensitive" } },
+          ],
+        }
+      : {};
+
+    const customizes = await prisma.customizeMaterial.findMany({
+      where,
+    });
 
     // if (!customizes || customizes?.length === 0) {
     //   res.status(404).json([]);
