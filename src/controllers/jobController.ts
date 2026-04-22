@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
-import prisma from '../config/db.js';
+import prisma from "../config/db.js";
+import type { Prisma } from "@prisma/client";
 
 // @desc    Get all jobs
 // @route   GET /api/jobs
@@ -7,13 +8,13 @@ import prisma from '../config/db.js';
 export const getJobs = async (req: Request, res: Response) => {
   try {
     const jobs = await prisma.job.findMany({
-      orderBy: { createdAt: 'desc' },
-      where: { status: 'Open' }
+      orderBy: { createdAt: "desc" },
+      where: { status: "Open" },
     });
     res.json(jobs);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -23,12 +24,12 @@ export const getJobs = async (req: Request, res: Response) => {
 export const getJobsAdmin = async (req: Request, res: Response) => {
   try {
     const jobs = await prisma.job.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
     res.json(jobs);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -68,7 +69,15 @@ export const getJobById = async (req: Request, res: Response) => {
 // @access  Private/Admin
 export const createJob = async (req: any, res: Response) => {
   try {
-    const { title, category, description, requirements, package: pkg, location, type } = req.body;
+    const {
+      title,
+      category,
+      description,
+      requirements,
+      package: pkg,
+      location,
+      type,
+    } = req.body;
     const job = await prisma.job.create({
       data: {
         title,
@@ -78,12 +87,12 @@ export const createJob = async (req: any, res: Response) => {
         package: pkg,
         location,
         type,
-      }
+      },
     });
     res.status(201).json(job);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -93,7 +102,16 @@ export const createJob = async (req: any, res: Response) => {
 export const updateJob = async (req: any, res: Response) => {
   try {
     const jobId = parseInt(req.params.id);
-    const { title, category, description, requirements, package: pkg, location, type, status } = req.body;
+    const {
+      title,
+      category,
+      description,
+      requirements,
+      package: pkg,
+      location,
+      type,
+      status,
+    } = req.body;
     const job = await prisma.job.update({
       where: { id: jobId },
       data: {
@@ -105,12 +123,12 @@ export const updateJob = async (req: any, res: Response) => {
         location,
         type,
         status,
-      }
+      },
     });
     res.json(job);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -123,10 +141,10 @@ export const deleteJob = async (req: any, res: Response) => {
     // Delete applications first or rely on cascade
     await prisma.jobApplication.deleteMany({ where: { jobId } });
     await prisma.job.delete({ where: { id: jobId } });
-    res.json({ message: 'Job removed' });
+    res.json({ message: "Job removed" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -144,12 +162,12 @@ export const applyToJob = async (req: Request, res: Response) => {
         phone,
         resumeUrl,
         message,
-      }
+      },
     });
     res.status(201).json(application);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
@@ -181,17 +199,33 @@ export const getApplications = async (req: Request, res: Response) => {
 // @access  Private/Admin
 export const getAllApplications = async (req: Request, res: Response) => {
   try {
+    const { search } = req.query;
+
+    const searchValue = search?.toString().trim();
+
+    const where: Prisma.JobApplicationWhereInput = searchValue
+      ? {
+          OR: [
+            { name: { contains: searchValue, mode: "insensitive" } },
+            { email: { contains: searchValue, mode: "insensitive" } },
+            { phone: { contains: searchValue, mode: "insensitive" } },
+            { status: { contains: searchValue, mode: "insensitive" } },
+          ],
+        }
+      : {};
+
     const applications = await prisma.jobApplication.findMany({
+      where,
       include: {
         job: {
-          select: { title: true }
-        }
+          select: { title: true },
+        },
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
     res.json(applications);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    res.status(500).json({ message: "Server Error" });
   }
 };

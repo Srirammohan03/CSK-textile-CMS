@@ -3,6 +3,7 @@ import prisma from "../config/db.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import type { AuthenticatedRequest } from "@/middlewares/authMiddleware.js";
+import type { Prisma, Role } from "@prisma/client";
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
@@ -133,7 +134,39 @@ export const addUsers = async (req: Request, res: Response) => {
 
 export const getAllusers = async (req: Request, res: Response) => {
   try {
+    const { search } = req.query;
+
+    const searchValue = search?.toString().trim();
+
+    const where: Prisma.UserWhereInput = searchValue
+      ? {
+          OR: [
+            {
+              name: {
+                contains: searchValue,
+                mode: "insensitive",
+              },
+            },
+            {
+              email: {
+                contains: searchValue,
+                mode: "insensitive",
+              },
+            },
+            ...(searchValue.toLowerCase() === "admin" ||
+            searchValue.toLowerCase() === "editor"
+              ? [
+                  {
+                    role: searchValue.toLowerCase() as Role,
+                  },
+                ]
+              : []),
+          ],
+        }
+      : {};
+
     const users = await prisma.user.findMany({
+      where,
       select: {
         id: true,
         name: true,
