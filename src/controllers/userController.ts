@@ -126,9 +126,9 @@ export const addUsers = async (req: Request, res: Response) => {
     res
       .status(201)
       .json({ message: "User created successfully", user: newUser });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+  } catch (error: any) {
+    console.error("REGISTER ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -140,29 +140,29 @@ export const getAllusers = async (req: Request, res: Response) => {
 
     const where: Prisma.UserWhereInput = searchValue
       ? {
-          OR: [
-            {
-              name: {
-                contains: searchValue,
-                mode: "insensitive",
-              },
+        OR: [
+          {
+            name: {
+              contains: searchValue,
+              mode: "insensitive",
             },
-            {
-              email: {
-                contains: searchValue,
-                mode: "insensitive",
-              },
+          },
+          {
+            email: {
+              contains: searchValue,
+              mode: "insensitive",
             },
-            ...(searchValue.toLowerCase() === "admin" ||
+          },
+          ...(searchValue.toLowerCase() === "admin" ||
             searchValue.toLowerCase() === "editor"
-              ? [
-                  {
-                    role: searchValue.toLowerCase() as Role,
-                  },
-                ]
-              : []),
-          ],
-        }
+            ? [
+              {
+                role: searchValue.toLowerCase() as Role,
+              },
+            ]
+            : []),
+        ],
+      }
       : {};
 
     const users = await prisma.user.findMany({
