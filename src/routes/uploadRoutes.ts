@@ -36,7 +36,7 @@ function resumeFilter(file: any, cb: any) {
     file.mimetype === "application/pdf" ||
     file.mimetype === "application/msword" ||
     file.mimetype ===
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
   if (extname && mimetype) {
     cb(null, true);
@@ -47,6 +47,9 @@ function resumeFilter(file: any, cb: any) {
 
 const uploadResume = multer({
   storage: careerStorage,
+  limits: {
+    fileSize: 25 * 1024 * 1024, // 25MB
+  },
   fileFilter: (req, file, cb) => resumeFilter(file, cb),
 });
 
@@ -62,9 +65,11 @@ function checkFileTypes(file: any, cb: any) {
     cb("Images only!");
   }
 }
-
 const upload = multer({
   storage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB
+  },
   fileFilter: function (req, file, cb) {
     checkFileTypes(file, cb);
   },
